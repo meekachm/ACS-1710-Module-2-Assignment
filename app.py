@@ -17,33 +17,66 @@ def homepage():
 @app.route('/froyo')
 def choose_froyo():
     """Shows a form to collect the user's Fro-Yo order."""
-    pass
+    return render_template('froyo_form.html')
 
 @app.route('/froyo_results')
 def show_froyo_results():
     """Shows the user what they ordered from the previous page."""
-    pass
+    users_froyo_flavor = request.args.get('flavor')
+    users_froyo_toppings = request.args.get('toppings')
+    
+    context = {
+        'users_froyo_flavor': users_froyo_flavor,
+        'users_froyo_toppings': users_froyo_toppings
+    }
+    
+    return render_template('froyo_results.html', **context)
 
 @app.route('/favorites')
 def favorites():
     """Shows the user a form to choose their favorite color, animal, and city."""
-    pass
+    return """
+    <form action="/favorites_results" method="GET">
+        What is your favorite color? <br/>
+        <input type="text" name="color"><br/>
+        
+        What is your favorite animal? <br/>
+        <input type="text" name="animal"><br/>
+        
+        What is your favorite city? <br/>
+        <input type="text" name="city"><br/>
+        
+        <input type="submit" value="Submit!">
+    </form>
+    """
 
 @app.route('/favorites_results')
 def favorites_results():
     """Shows the user a nice message using their form results."""
-    pass
+    user_favorite_color = request.args.get('color')
+    user_favorite_animal = request.args.get('animal')
+    user_favorite_city = request.args.get('city')
+    return f'Wow, I didn\'t know {user_favorite_color} {user_favorite_animal}s lived in {user_favorite_city}!'
 
 @app.route('/secret_message')
 def secret_message():
     """Shows the user a form to collect a secret message. Sends the result via
     the POST method to keep it a secret!"""
-    pass
+    return """
+    <form action="/message_results" method="POST">
+        Enter your secret message: <br/>
+        <input type="text" name="message"><br/>
+        
+        <input type="submit" value="Submit!">
+    </form>
+    """
 
 @app.route('/message_results', methods=['POST'])
 def message_results():
     """Shows the user their message, with the letters in sorted order."""
-    pass
+    user_secret_message = request.form.get('message')
+    sorted_message = sort_letters(user_secret_message)
+    return f"Here's your secret message!<br/> {sorted_message}"
 
 @app.route('/calculator')
 def calculator():
@@ -66,7 +99,29 @@ def calculator():
 @app.route('/calculator_results')
 def calculator_results():
     """Shows the user the result of their calculation."""
-    pass
+    # Get user input 
+    operand1 = int(request.args.get('operand1'))
+    operand2 = int(request.args.get('operand2'))
+    operation = request.args.get('operation')
+
+    # Perform the calculation 
+    if operation == 'add':
+        result = operand1 + operand2
+    if operation == 'subtract':
+        result = operand1 - operand2
+    if operation == 'multiply':
+        result = operand1 * operand2
+    if operation == 'divide':
+        result = operand1 / operand2
+
+    context = {
+        'operand1': operand1,
+        'operand2': operand2,
+        'operation': operation,
+        'result': result
+    }
+
+    return render_template('calculator_results.html', operation=operation, operand1=operand1, operand2=operand2, result=result)
 
 
 HOROSCOPE_PERSONALITIES = {
@@ -94,19 +149,23 @@ def horoscope_results():
     """Shows the user the result for their chosen horoscope."""
 
     # TODO: Get the sign the user entered in the form, based on their birthday
-    horoscope_sign = ''
+    horoscope_sign = request.args.get('horoscope_sign')
 
     # TODO: Look up the user's personality in the HOROSCOPE_PERSONALITIES
     # dictionary based on what the user entered
-    users_personality = ''
+    users_personality = HOROSCOPE_PERSONALITIES[horoscope_sign]
 
     # TODO: Generate a random number from 1 to 99
-    lucky_number = 0
+    lucky_number = random.randint(1, 99)
+
+    # Get user's name from the form
+    users_name = request.args.get('users_name')
 
     context = {
         'horoscope_sign': horoscope_sign,
         'personality': users_personality, 
-        'lucky_number': lucky_number
+        'lucky_number': lucky_number,
+        'users_name': users_name
     }
 
     return render_template('horoscope_results.html', **context)
